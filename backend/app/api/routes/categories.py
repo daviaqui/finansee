@@ -1,0 +1,68 @@
+from uuid import UUID
+
+from fastapi import APIRouter, HTTPException, Response, status
+from sqlalchemy import select
+
+from app.api.dependencies import CurrentUser, DbSession
+from app.models.category import Category
+from app.schemas.category import CategoryCreate, CategoryResponse, CategoryUpdate
+
+router = APIRouter(prefix="/categories", tags=["Categorias"])
+
+
+@router.get("", response_model=list[CategoryResponse])
+def list_categories(db: DbSession, current_user: CurrentUser) -> list[Category]:
+    return list(
+        db.scalars(
+            select(Category).where(Category.user_id == current_user.id).order_by(Category.name)
+        )
+    )
+
+
+@router.post("", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
+def create_category(payload: CategoryCreate, db: DbSession, current_user: CurrentUser) -> Category:
+    existing = db.scalar(
+        select(Category.id).where(
+            Category.user_id == current_user.id,
+            Category.name == payload.name.strip(),
+        )
+    )
+    if existing:
+        raise HTTPException(status_code=409, detail="Você já possui uma categoria com esse nome")
+    category = Category(user_id=current_user.id, **payload.model_dump())
+    category.name = category.name.strip()
+    db.add(category)
+    db.commit()
+    db.refresh(category)
+    return category
+
+
+def get_user_category(category_id: UUID, db: DbSession, current_user: CurrentUser) -> Category:
+    category = db.scalar(
+        select(Category).where(Category.id == category_id, Category.user_id == current_user.id)
+    )
+    if not category:
+        raise HTTPException(status_code=404, detail="Categoria não encontrada")
+    return category
+
+
+@router.put("/{category_id}", response_model=CategoryResponse)
+def update_category(
+    category_id: UUID, payload: CategoryUpdate, db: DbSession, current_user: CurrentUser
+) -> Category:
+    category = get_user_category(category_id, db, current_user)
+    for key, value in payload.model_dump().items():
+        setattr(category, key, value.strip() if key == "name" else value)
+    db.commit()
+    db.refresh(category)
+    return category
+
+
+@router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_category(
+    category_id: UUID, db: DbSession, current_user: CurrentUser
+) -> Response:
+    category = get_user_category(category_id, db, current_user)
+    db.delete(category)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

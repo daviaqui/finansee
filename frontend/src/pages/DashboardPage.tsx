@@ -4,7 +4,6 @@ import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
-  CalendarDays,
   CircleDollarSign,
   Clock3,
   Plus,
@@ -25,6 +24,7 @@ import {
   YAxis,
 } from 'recharts'
 import { Modal } from '../components/Modal'
+import { MonthPicker } from '../components/MonthPicker'
 import { TransactionForm } from '../components/TransactionForm'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/AuthContext'
@@ -63,7 +63,7 @@ export function DashboardPage() {
           <p>Acompanhe os números que importam e decida seus próximos passos.</p>
         </div>
         <div className="heading-actions">
-          <label className="month-picker"><CalendarDays size={18} /><input aria-label="Mês do dashboard" type="month" value={month} onChange={(event) => setMonth(event.target.value)} /></label>
+          <MonthPicker value={month} onChange={setMonth} />
           <button className="button primary" onClick={() => setFormOpen(true)}><Plus size={18} /> Novo lançamento</button>
         </div>
       </div>
@@ -134,4 +134,3 @@ export function DashboardPage() {
 function SummaryCard({ label, value, icon: Icon, tone, detail }: { label: string; value: string; icon: typeof CircleDollarSign; tone: string; detail: string }) {
   return <article className={`summary-card ${tone}`}><div className="summary-card-top"><span>{label}</span><i><Icon size={20} /></i></div><strong>{currency.format(Number(value))}</strong><p>{detail}</p></article>
 }
-

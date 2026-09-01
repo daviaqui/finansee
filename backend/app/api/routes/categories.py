@@ -2,6 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Response, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from app.api.dependencies import CurrentUser, DbSession
 from app.models.category import Category
@@ -24,15 +25,20 @@ def create_category(payload: CategoryCreate, db: DbSession, current_user: Curren
     existing = db.scalar(
         select(Category.id).where(
             Category.user_id == current_user.id,
-            Category.name == payload.name.strip(),
+            Category.name == payload.name,
         )
     )
     if existing:
         raise HTTPException(status_code=409, detail="Você já possui uma categoria com esse nome")
     category = Category(user_id=current_user.id, **payload.model_dump())
-    category.name = category.name.strip()
     db.add(category)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=409, detail="Você já possui uma categoria com esse nome"
+        ) from exc
     db.refresh(category)
     return category
 
@@ -51,9 +57,24 @@ def update_category(
     category_id: UUID, payload: CategoryUpdate, db: DbSession, current_user: CurrentUser
 ) -> Category:
     category = get_user_category(category_id, db, current_user)
+    existing = db.scalar(
+        select(Category.id).where(
+            Category.user_id == current_user.id,
+            Category.name == payload.name,
+            Category.id != category.id,
+        )
+    )
+    if existing:
+        raise HTTPException(status_code=409, detail="Você já possui uma categoria com esse nome")
     for key, value in payload.model_dump().items():
-        setattr(category, key, value.strip() if key == "name" else value)
-    db.commit()
+        setattr(category, key, value)
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=409, detail="Você já possui uma categoria com esse nome"
+        ) from exc
     db.refresh(category)
     return category
 

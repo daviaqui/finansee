@@ -1,8 +1,9 @@
 from datetime import date, datetime
 from decimal import Decimal
+from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.enums import TransactionStatus, TransactionType
 from app.schemas.category import CategoryResponse
@@ -17,6 +18,13 @@ class TransactionCreate(BaseModel):
     category_id: UUID | None = None
     notes: str | None = Field(default=None, max_length=1000)
 
+    @field_validator("description", mode="before")
+    @classmethod
+    def strip_description(cls, value: Any) -> Any:
+        if value is None:
+            raise ValueError("A descrição não pode ser vazia")
+        return value.strip() if isinstance(value, str) else value
+
 
 class TransactionUpdate(BaseModel):
     description: str | None = Field(default=None, min_length=1, max_length=160)
@@ -26,6 +34,13 @@ class TransactionUpdate(BaseModel):
     transaction_date: date | None = None
     category_id: UUID | None = None
     notes: str | None = Field(default=None, max_length=1000)
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def strip_description(cls, value: Any) -> Any:
+        if value is None:
+            raise ValueError("A descrição não pode ser vazia")
+        return value.strip() if isinstance(value, str) else value
 
 
 class TransactionResponse(BaseModel):

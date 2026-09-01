@@ -22,6 +22,9 @@ def override_get_db() -> Generator[Session, None, None]:
     db = TestingSessionLocal()
     try:
         yield db
+    except BaseException:
+        db.rollback()
+        raise
     finally:
         db.close()
 

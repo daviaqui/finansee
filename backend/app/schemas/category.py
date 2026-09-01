@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -8,6 +9,11 @@ class CategoryCreate(BaseModel):
     name: str = Field(min_length=1, max_length=80)
     color: str = "#6366f1"
     icon: str = Field(default="circle", max_length=40)
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def strip_name(cls, value: Any) -> Any:
+        return value.strip() if isinstance(value, str) else value
 
     @field_validator("color")
     @classmethod

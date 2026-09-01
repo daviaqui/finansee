@@ -78,7 +78,6 @@ def create_transaction(
     if payload.category_id and not user_owns_category(db, current_user, payload.category_id):
         raise HTTPException(status_code=422, detail="Categoria inválida")
     transaction = Transaction(user_id=current_user.id, **payload.model_dump())
-    transaction.description = transaction.description.strip()
     db.add(transaction)
     db.commit()
     statement = (
@@ -123,7 +122,7 @@ def update_transaction(
     ):
         raise HTTPException(status_code=422, detail="Categoria inválida")
     for key, value in changes.items():
-        setattr(transaction, key, value.strip() if key == "description" else value)
+        setattr(transaction, key, value)
     db.commit()
     db.refresh(transaction)
     return transaction

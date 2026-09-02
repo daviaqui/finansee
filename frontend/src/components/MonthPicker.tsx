@@ -85,8 +85,8 @@ export function MonthPicker({ value, onChange }: MonthPickerProps) {
       </button>
 
       {isOpen && (
-        <div className="month-picker-popover" id={dialogId} role="dialog" aria-label="Escolher mês e ano">
-          <div className="month-picker-header">
+        <div className="picker-popover month-picker-popover" id={dialogId} role="dialog" aria-label="Escolher mês e ano">
+          <div className="picker-header">
             <button type="button" aria-label={`Mostrar o ano ${visibleYear - 1}`} onClick={() => setVisibleYear((year) => year - 1)}>
               <ChevronLeft size={18} aria-hidden="true" />
             </button>
@@ -96,7 +96,7 @@ export function MonthPicker({ value, onChange }: MonthPickerProps) {
             </button>
           </div>
 
-          <div className="month-picker-grid">
+          <div className="picker-option-grid">
             {MONTHS.map((monthName, index) => {
               const isSelected = visibleYear === selectedYear && index + 1 === selectedMonth
               return (
@@ -113,7 +113,7 @@ export function MonthPicker({ value, onChange }: MonthPickerProps) {
             })}
           </div>
 
-          <button className="month-picker-today" type="button" onClick={chooseCurrentMonth}>Ir para o mês atual</button>
+          <button className="picker-today" type="button" onClick={chooseCurrentMonth}>Ir para o mês atual</button>
         </div>
       )}
     </div>

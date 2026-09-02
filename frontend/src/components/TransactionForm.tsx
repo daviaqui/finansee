@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, getApiError } from '../lib/api'
 import { today } from '../lib/format'
 import type { Category, Transaction, TransactionPayload } from '../types'
+import { CurrencyInput } from './CurrencyInput'
+import { DatePicker } from './DatePicker'
 
 interface Props {
   categories: Category[]
@@ -13,7 +15,7 @@ interface Props {
 
 export function TransactionForm({ categories, transaction, onSuccess }: Props) {
   const queryClient = useQueryClient()
-  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<TransactionPayload>({
+  const { control, register, handleSubmit, reset, watch, formState: { errors } } = useForm<TransactionPayload>({
     defaultValues: {
       description: '',
       amount: '',
@@ -74,12 +76,42 @@ export function TransactionForm({ categories, transaction, onSuccess }: Props) {
       <div className="form-grid">
         <div className="form-field">
           <label htmlFor="amount">Valor</label>
-          <div className="money-input"><span>R$</span><input id="amount" type="number" min="0.01" step="0.01" placeholder="0,00" {...register('amount', { required: 'Informe o valor' })} /></div>
+          <Controller
+            control={control}
+            name="amount"
+            rules={{
+              required: 'Informe o valor',
+              validate: (value) => Number(value) > 0 || 'Informe um valor maior que zero',
+            }}
+            render={({ field, fieldState }) => (
+              <CurrencyInput
+                id="amount"
+                name={field.name}
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                invalid={fieldState.invalid}
+                ref={field.ref}
+              />
+            )}
+          />
           {errors.amount && <small className="field-error">{errors.amount.message}</small>}
         </div>
         <div className="form-field">
           <label htmlFor="date">Data</label>
-          <input id="date" type="date" {...register('transaction_date', { required: true })} />
+          <Controller
+            control={control}
+            name="transaction_date"
+            rules={{ required: true }}
+            render={({ field, fieldState }) => (
+              <DatePicker
+                id="date"
+                value={field.value}
+                onChange={field.onChange}
+                invalid={fieldState.invalid}
+              />
+            )}
+          />
         </div>
         <div className="form-field">
           <label htmlFor="category">Categoria</label>

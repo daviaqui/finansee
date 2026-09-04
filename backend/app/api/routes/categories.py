@@ -1,10 +1,11 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, Response, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.api.dependencies import CurrentUser, DbSession
+from app.core.exceptions import ApiError, CategoryNameConflictError
 from app.models.category import Category
 from app.schemas.category import CategoryCreate, CategoryResponse, CategoryUpdate
 
@@ -29,16 +30,14 @@ def create_category(payload: CategoryCreate, db: DbSession, current_user: Curren
         )
     )
     if existing:
-        raise HTTPException(status_code=409, detail="Você já possui uma categoria com esse nome")
+        raise CategoryNameConflictError()
     category = Category(user_id=current_user.id, **payload.model_dump())
     db.add(category)
     try:
         db.commit()
     except IntegrityError as exc:
         db.rollback()
-        raise HTTPException(
-            status_code=409, detail="Você já possui uma categoria com esse nome"
-        ) from exc
+        raise CategoryNameConflictError() from exc
     db.refresh(category)
     return category
 
@@ -48,7 +47,11 @@ def get_user_category(category_id: UUID, db: DbSession, current_user: CurrentUse
         select(Category).where(Category.id == category_id, Category.user_id == current_user.id)
     )
     if not category:
-        raise HTTPException(status_code=404, detail="Categoria não encontrada")
+        raise ApiError(
+            status_code=404,
+            detail="Categoria não encontrada",
+            code="category_not_found",
+        )
     return category
 
 
@@ -65,16 +68,14 @@ def update_category(
         )
     )
     if existing:
-        raise HTTPException(status_code=409, detail="Você já possui uma categoria com esse nome")
+        raise CategoryNameConflictError()
     for key, value in payload.model_dump().items():
         setattr(category, key, value)
     try:
         db.commit()
     except IntegrityError as exc:
         db.rollback()
-        raise HTTPException(
-            status_code=409, detail="Você já possui uma categoria com esse nome"
-        ) from exc
+        raise CategoryNameConflictError() from exc
     db.refresh(category)
     return category
 

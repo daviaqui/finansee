@@ -1,9 +1,15 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
+from app.api.error_handlers import register_error_handlers
 from app.api.routes import auth, categories, dashboard, health, transactions
 from app.core.config import settings
+from app.schemas.error import ErrorResponse
+
+ERROR_RESPONSES = {
+    status_code: {"model": ErrorResponse}
+    for status_code in (400, 401, 403, 404, 409, 422, 500)
+}
 
 app = FastAPI(
     title=settings.app_name,
@@ -11,6 +17,7 @@ app = FastAPI(
     description="API para organização de finanças pessoais.",
     docs_url="/docs",
     redoc_url="/redoc",
+    responses=ERROR_RESPONSES,
 )
 
 app.add_middleware(
@@ -26,9 +33,5 @@ app.include_router(auth.router, prefix=settings.api_v1_prefix)
 app.include_router(categories.router, prefix=settings.api_v1_prefix)
 app.include_router(transactions.router, prefix=settings.api_v1_prefix)
 app.include_router(dashboard.router, prefix=settings.api_v1_prefix)
-
-
-@app.exception_handler(Exception)
-async def unhandled_exception(_: Request, __: Exception) -> JSONResponse:
-    return JSONResponse(status_code=500, content={"detail": "Erro interno do servidor"})
+register_error_handlers(app)
 

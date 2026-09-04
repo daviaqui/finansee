@@ -2,11 +2,12 @@ from datetime import date
 from math import ceil
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, Response, status
+from fastapi import APIRouter, Query, Response, status
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import selectinload
 
 from app.api.dependencies import CurrentUser, DbSession
+from app.core.exceptions import ApiError
 from app.models.enums import TransactionStatus, TransactionType
 from app.models.transaction import Transaction
 from app.schemas.transaction import (
@@ -76,7 +77,7 @@ def create_transaction(
     payload: TransactionCreate, db: DbSession, current_user: CurrentUser
 ) -> Transaction:
     if payload.category_id and not user_owns_category(db, current_user, payload.category_id):
-        raise HTTPException(status_code=422, detail="Categoria inválida")
+        raise ApiError(status_code=422, detail="Categoria inválida", code="invalid_category")
     transaction = Transaction(user_id=current_user.id, **payload.model_dump())
     db.add(transaction)
     db.commit()
@@ -97,7 +98,11 @@ def get_user_transaction(
         .where(Transaction.id == transaction_id, Transaction.user_id == current_user.id)
     )
     if not transaction:
-        raise HTTPException(status_code=404, detail="Lançamento não encontrado")
+        raise ApiError(
+            status_code=404,
+            detail="Lançamento não encontrado",
+            code="transaction_not_found",
+        )
     return transaction
 
 
@@ -120,7 +125,7 @@ def update_transaction(
     if changes.get("category_id") and not user_owns_category(
         db, current_user, changes["category_id"]
     ):
-        raise HTTPException(status_code=422, detail="Categoria inválida")
+        raise ApiError(status_code=422, detail="Categoria inválida", code="invalid_category")
     for key, value in changes.items():
         setattr(transaction, key, value)
     db.commit()

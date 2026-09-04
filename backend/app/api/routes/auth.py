@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 
 from app.api.dependencies import CurrentUser, DbSession
+from app.core.exceptions import ApiError, EmailAlreadyRegisteredError
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models.user import User
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
@@ -16,7 +17,7 @@ router = APIRouter(prefix="/auth", tags=["Autenticação"])
 def register(payload: RegisterRequest, db: DbSession) -> TokenResponse:
     email = str(payload.email)
     if db.scalar(select(User.id).where(func.lower(User.email) == email)):
-        raise HTTPException(status_code=409, detail="Este e-mail já está cadastrado")
+        raise EmailAlreadyRegisteredError()
 
     user = User(
         name=payload.name,
@@ -30,7 +31,7 @@ def register(payload: RegisterRequest, db: DbSession) -> TokenResponse:
         db.commit()
     except IntegrityError as exc:
         db.rollback()
-        raise HTTPException(status_code=409, detail="Este e-mail já está cadastrado") from exc
+        raise EmailAlreadyRegisteredError() from exc
     return TokenResponse(access_token=create_access_token(user.id))
 
 
@@ -38,7 +39,11 @@ def register(payload: RegisterRequest, db: DbSession) -> TokenResponse:
 def login(payload: LoginRequest, db: DbSession) -> TokenResponse:
     user = db.scalar(select(User).where(func.lower(User.email) == str(payload.email)))
     if not user or not verify_password(payload.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="E-mail ou senha inválidos")
+        raise ApiError(
+            status_code=401,
+            detail="E-mail ou senha inválidos",
+            code="invalid_credentials",
+        )
     return TokenResponse(access_token=create_access_token(user.id))
 
 

@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import ApiError
 from app.core.security import decode_access_token
 from app.db.session import get_db
 from app.models.user import User
@@ -16,9 +17,10 @@ def get_current_user(
     db: DbSession,
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
 ) -> User:
-    unauthorized = HTTPException(
+    unauthorized = ApiError(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Credenciais inválidas ou expiradas",
+        code="invalid_or_expired_credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     if not credentials:

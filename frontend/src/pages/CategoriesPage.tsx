@@ -4,22 +4,25 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Tag, Trash2 } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { api, getApiError } from '../lib/api'
+import { useAuth } from '../lib/AuthContext'
+import { queryKeys } from '../lib/queryKeys'
 import type { Category } from '../types'
 
 interface CategoryForm { name: string; color: string }
 
 export function CategoriesPage() {
+  const { user } = useAuth()
   const queryClient = useQueryClient()
   const [modalOpen, setModalOpen] = useState(false)
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CategoryForm>({ defaultValues: { name: '', color: '#6366f1' } })
-  const { data: categories = [], isLoading } = useQuery({ queryKey: ['categories'], queryFn: () => api.get<Category[]>('/categories').then((res) => res.data) })
+  const { data: categories = [], isLoading } = useQuery({ queryKey: queryKeys.categories(user?.id), enabled: !!user, queryFn: ({ signal }) => api.get<Category[]>('/categories', { signal }).then((res) => res.data) })
   const create = useMutation({
     mutationFn: (values: CategoryForm) => api.post('/categories', { ...values, icon: 'circle' }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['categories'] }); reset(); setModalOpen(false) },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.categories(user?.id) }); reset(); setModalOpen(false) },
   })
   const remove = useMutation({
     mutationFn: (id: string) => api.delete(`/categories/${id}`),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['categories'] }); queryClient.invalidateQueries({ queryKey: ['transactions'] }) },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.categories(user?.id) }); queryClient.invalidateQueries({ queryKey: queryKeys.transactions(user?.id) }) },
   })
 
   function removeCategory(category: Category) {

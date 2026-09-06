@@ -6,9 +6,12 @@ import { Modal } from '../components/Modal'
 import { TransactionForm } from '../components/TransactionForm'
 import { api } from '../lib/api'
 import { currency, localDate } from '../lib/format'
+import { useAuth } from '../lib/AuthContext'
+import { queryKeys } from '../lib/queryKeys'
 import type { Category, Transaction, TransactionList, TransactionStatus, TransactionType } from '../types'
 
 export function TransactionsPage() {
+  const { user } = useAuth()
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
@@ -19,13 +22,14 @@ export function TransactionsPage() {
 
   const params = { page, page_size: 12, search: search || undefined, transaction_type: type || undefined, transaction_status: status || undefined }
   const { data, isLoading } = useQuery({
-    queryKey: ['transactions', params],
-    queryFn: () => api.get<TransactionList>('/transactions', { params }).then((res) => res.data),
+    queryKey: [...queryKeys.transactions(user?.id), params],
+    enabled: !!user,
+    queryFn: ({ signal }) => api.get<TransactionList>('/transactions', { params, signal }).then((res) => res.data),
   })
-  const { data: categories = [] } = useQuery({ queryKey: ['categories'], queryFn: () => api.get<Category[]>('/categories').then((res) => res.data) })
+  const { data: categories = [] } = useQuery({ queryKey: queryKeys.categories(user?.id), enabled: !!user, queryFn: ({ signal }) => api.get<Category[]>('/categories', { signal }).then((res) => res.data) })
   const remove = useMutation({
     mutationFn: (id: string) => api.delete(`/transactions/${id}`),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['transactions'] }); queryClient.invalidateQueries({ queryKey: ['dashboard'] }) },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.transactions(user?.id) }); queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(user?.id) }) },
   })
 
   function openEdit(transaction: Transaction) { setEditing(transaction); setFormOpen(true) }

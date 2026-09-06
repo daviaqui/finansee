@@ -3,6 +3,8 @@ import { Controller, useForm } from 'react-hook-form'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, getApiError } from '../lib/api'
 import { today } from '../lib/format'
+import { useAuth } from '../lib/AuthContext'
+import { queryKeys } from '../lib/queryKeys'
 import type { Category, Transaction, TransactionPayload } from '../types'
 import { CurrencyInput } from './CurrencyInput'
 import { DatePicker } from './DatePicker'
@@ -14,6 +16,7 @@ interface Props {
 }
 
 export function TransactionForm({ categories, transaction, onSuccess }: Props) {
+  const { user } = useAuth()
   const queryClient = useQueryClient()
   const { control, register, handleSubmit, reset, watch, formState: { errors } } = useForm<TransactionPayload>({
     defaultValues: {
@@ -51,8 +54,8 @@ export function TransactionForm({ categories, transaction, onSuccess }: Props) {
     },
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['transactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions(user?.id) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(user?.id) }),
       ])
       onSuccess()
     },

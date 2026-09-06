@@ -151,6 +151,7 @@ cd ..
 # frontend
 cd frontend
 pnpm lint
+pnpm test
 pnpm build
 cd ..
 ```
@@ -159,6 +160,20 @@ Depois que os ambientes do backend e do frontend estiverem instalados, também �
 `make test`, `make lint`, `make up` e `make down` na raiz. Os atalhos do backend usam diretamente
 o ambiente virtual `backend/.venv`, portanto não é necessário ativá-lo antes. No Windows, use os
 comandos diretos mostrados acima, pois os caminhos do Makefile seguem o padrão POSIX.
+
+### Isolamento de sessão no frontend
+
+As consultas de categorias, lançamentos e dashboard incluem o ID do usuário na chave do cache.
+Ao sair, trocar de conta ou receber uma resposta de sessão inválida, o frontend limpa os caches
+de consultas e mutações e cancela requisições pendentes. Respostas atrasadas da sessão anterior
+não podem substituir o usuário atual. A troca de sessão também é sincronizada entre abas.
+Essa limpeza afeta somente dados temporários do navegador; os lançamentos continuam no banco.
+
+`pnpm test` executa os testes de regressão de sessão com Vitest e React Testing Library, usando
+dados sintéticos e sem acessar o backend. Eles cobrem troca de contas na tela de categorias,
+cancelamento de consultas, respostas atrasadas, expiração e sincronização entre abas. A CI
+executa esses testes antes do build. Novas consultas privadas devem usar as chaves de
+`src/lib/queryKeys.ts` e encaminhar o `signal` do TanStack Query para o Axios.
 
 ## Estrutura
 

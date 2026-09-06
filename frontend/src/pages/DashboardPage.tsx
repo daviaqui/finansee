@@ -29,6 +29,7 @@ import { TransactionForm } from '../components/TransactionForm'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/AuthContext'
 import { compactCurrency, currency, localDate } from '../lib/format'
+import { queryKeys } from '../lib/queryKeys'
 import type { Category, DashboardData, TransactionList } from '../types'
 
 export function DashboardPage() {
@@ -39,16 +40,19 @@ export function DashboardPage() {
   const [year, monthNumber] = month.split('-').map(Number)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['dashboard', month],
-    queryFn: () => api.get<DashboardData>('/dashboard', { params: { year, month: monthNumber } }).then((res) => res.data),
+    queryKey: [...queryKeys.dashboard(user?.id), month],
+    enabled: !!user,
+    queryFn: ({ signal }) => api.get<DashboardData>('/dashboard', { signal, params: { year, month: monthNumber } }).then((res) => res.data),
   })
   const { data: recent } = useQuery({
-    queryKey: ['transactions', 'recent'],
-    queryFn: () => api.get<TransactionList>('/transactions', { params: { page_size: 5 } }).then((res) => res.data),
+    queryKey: [...queryKeys.transactions(user?.id), 'recent'],
+    enabled: !!user,
+    queryFn: ({ signal }) => api.get<TransactionList>('/transactions', { signal, params: { page_size: 5 } }).then((res) => res.data),
   })
   const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => api.get<Category[]>('/categories').then((res) => res.data),
+    queryKey: queryKeys.categories(user?.id),
+    enabled: !!user,
+    queryFn: ({ signal }) => api.get<Category[]>('/categories', { signal }).then((res) => res.data),
   })
 
   const chartData = data?.cash_flow.map((item) => ({ ...item, income: Number(item.income), expenses: Number(item.expenses) })) ?? []

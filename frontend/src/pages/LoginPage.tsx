@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { ArrowRight, BarChart3, LockKeyhole, ShieldCheck } from 'lucide-react'
+import { ArrowRight, BarChart3, LockKeyhole, ShieldCheck, Sparkles } from 'lucide-react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { Logo } from '../components/Logo'
 import { api, getApiError } from '../lib/api'
@@ -8,10 +8,16 @@ import { useAuth } from '../lib/AuthContext'
 
 interface LoginForm { email: string; password: string }
 
+const DEMO_CREDENTIALS: LoginForm = {
+  email: 'demo@finansee.app',
+  password: 'Demo@FinanSee2026',
+}
+
 export function LoginPage() {
   const { user, authenticate } = useAuth()
   const navigate = useNavigate()
   const [error, setError] = useState('')
+  const [demoLoading, setDemoLoading] = useState(false)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>()
 
   if (user) return <Navigate to="/" replace />
@@ -24,6 +30,20 @@ export function LoginPage() {
       navigate('/')
     } catch (requestError) {
       setError(getApiError(requestError))
+    }
+  }
+
+  async function enterDemo() {
+    setError('')
+    setDemoLoading(true)
+    try {
+      const { data } = await api.post<{ access_token: string }>('/auth/login', DEMO_CREDENTIALS)
+      await authenticate(data.access_token)
+      navigate('/')
+    } catch (requestError) {
+      setError(getApiError(requestError))
+    } finally {
+      setDemoLoading(false)
     }
   }
 
@@ -64,6 +84,11 @@ export function LoginPage() {
               {isSubmitting ? 'Entrando...' : <>Entrar <ArrowRight size={18} /></>}
             </button>
           </form>
+          <div className="demo-divider"><span>ou explore sem cadastro</span></div>
+          <button className="button demo-button" type="button" onClick={enterDemo} disabled={demoLoading}>
+            <Sparkles size={17} /> {demoLoading ? 'Preparando demonstração...' : 'Acessar conta demo'}
+          </button>
+          <p className="demo-note">Dados fictícios, restaurados quando o backend inicia.</p>
           <p className="auth-switch">Ainda não tem uma conta? <Link to="/cadastro">Criar conta grátis</Link></p>
         </div>
       </main>

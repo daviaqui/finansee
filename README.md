@@ -4,6 +4,19 @@ Sistema financeiro pessoal full stack para registrar receitas e despesas, acompa
 
 O projeto foi criado como uma aplicação real para uso diário e, ao mesmo tempo, como uma peça de portfólio: arquitetura organizada, autenticação, isolamento de dados, migrations, testes, documentação automática e execução com Docker.
 
+## Demonstração
+
+A demonstração do projeto será apresentada em vídeo, executando a aplicação localmente com dados
+fictícios. Para reproduzir o mesmo cenário, use **Acessar conta demo** na tela de login ou informe:
+
+```text
+E-mail: demo@finansee.app
+Senha:  Demo@FinanSee2026
+```
+
+> Todos os dados da demonstração são fictícios e seu conteúdo é restaurado quando o backend inicia.
+> Não utilize informações pessoais ou financeiras reais durante a gravação.
+
 ## O que a v1 entrega
 
 - Cadastro e login com senha protegida por Argon2 e sessão via JWT;
@@ -28,6 +41,20 @@ O projeto foi criado como uma aplicação real para uso diário e, ao mesmo temp
 | Frontend | React 19, TypeScript, Vite, TanStack Query, Recharts |
 | Qualidade | Pytest, Ruff, ESLint, GitHub Actions |
 | Infraestrutura | Docker, Docker Compose, Nginx |
+
+## Arquitetura
+
+```mermaid
+flowchart LR
+    U[Usuário no navegador] -->|HTTP| N[Nginx]
+    N -->|arquivos estáticos| R[React + Vite]
+    N -->|proxy /api e /docs| A[FastAPI]
+    A -->|SQLAlchemy + psycopg| P[(PostgreSQL)]
+    A -->|OpenAPI| D[Swagger UI /docs]
+```
+
+No Docker Compose, o Nginx serve o build do React e encaminha as chamadas da API para o FastAPI. No
+desenvolvimento local, o Vite e o FastAPI executam separadamente para preservar o hot reload.
 
 ## Executar com Docker (recomendado)
 
@@ -64,10 +91,6 @@ Depois, acesse:
 - verificação de saúde: <http://localhost/health>
 
 O backend aplica as migrations automaticamente ao iniciar. Os dados do PostgreSQL ficam persistidos no volume `postgres_data`.
-
-> Antes de publicar, troque `POSTGRES_PASSWORD` e `SECRET_KEY` no arquivo `.env`. Uma chave pode
-> ser gerada de forma multiplataforma com
-> `python -c "import secrets; print(secrets.token_hex(32))"`.
 
 ## Desenvolvimento local
 
@@ -221,7 +244,7 @@ executa esses testes antes do build. Novas consultas privadas devem usar as chav
 - importação de extratos CSV/OFX;
 - exportação de relatórios;
 - recuperação de senha e autenticação com dois fatores;
-- testes E2E e deploy automatizado.
+- testes E2E.
 
 ## Licença
 

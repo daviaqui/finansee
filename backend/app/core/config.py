@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     secret_key: str = Field(default="change-me-in-production", min_length=16)
     access_token_expire_minutes: int = 60 * 24 * 7
     cors_origins: str = "http://localhost:5173,http://localhost:3000,http://localhost"
+    enable_demo_seed: bool = False
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

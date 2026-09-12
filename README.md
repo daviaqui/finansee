@@ -6,8 +6,34 @@ O projeto foi criado como uma aplicação real para uso diário e, ao mesmo temp
 
 ## Demonstração
 
-A demonstração do projeto será apresentada em vídeo, executando a aplicação localmente com dados
-fictícios. Para reproduzir o mesmo cenário, use **Acessar conta demo** na tela de login ou informe:
+Confira as principais telas do FinanSee com dados fictícios da conta de demonstração.
+
+
+
+### Dashboard
+
+Visão mensal do saldo, receitas, despesas e pendências, com gráficos de fluxo de caixa e
+distribuição dos gastos por categoria.
+
+![Dashboard do FinanSee com indicadores mensais, fluxo de caixa e despesas por categoria](docs/images/dashboard.png)
+
+### Lançamentos
+
+Consulta de receitas e despesas com busca, filtros por tipo e situação e ações para gerenciar
+cada lançamento.
+
+![Tela de lançamentos do FinanSee com busca, filtros e lista de movimentações financeiras](docs/images/lancamentos.png)
+
+### Categorias
+
+Organização dos lançamentos em categorias personalizáveis, identificadas por nome, ícone e cor.
+
+![Tela de categorias do FinanSee com grupos como Alimentação, Moradia, Salário e Transporte](docs/images/categorias.png)
+
+### Experimente localmente
+
+Após [executar a aplicação com Docker](#executar-com-docker-recomendado), use **Acessar conta demo**
+na tela de login ou informe:
 
 ```text
 E-mail: demo@finansee.app
@@ -15,7 +41,7 @@ Senha:  Demo@FinanSee2026
 ```
 
 > Todos os dados da demonstração são fictícios e seu conteúdo é restaurado quando o backend inicia.
-> Não utilize informações pessoais ou financeiras reais durante a gravação.
+> Use a conta demo para explorar o sistema com informações fictícias.
 
 ## O que a v1 entrega
 
@@ -219,6 +245,7 @@ executa esses testes antes do build. Novas consultas privadas devem usar as chav
 │       ├── lib/              # API, autenticação e formatação
 │       ├── pages/            # telas da aplicação
 │       └── types/            # contratos TypeScript
+├── docs/images/             # capturas de tela da demonstração
 ├── .github/workflows/        # integração contínua
 └── docker-compose.yml
 ```

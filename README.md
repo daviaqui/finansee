@@ -8,7 +8,7 @@ O projeto foi criado como uma aplicação real para uso diário e, ao mesmo temp
 
 Confira as principais telas do FinanSee com dados fictícios da conta de demonstração.
 
-
+https://github.com/user-attachments/assets/a4c02a20-33b2-4e6a-8436-194cf5f0d72b
 
 ### Dashboard
 

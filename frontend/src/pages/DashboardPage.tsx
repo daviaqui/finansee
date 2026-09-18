@@ -15,15 +15,13 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
 import { Modal } from '../components/Modal'
+import { CategoryDonut } from '../components/CategoryDonut'
 import { MonthPicker } from '../components/MonthPicker'
 import { TransactionForm } from '../components/TransactionForm'
 import { api } from '../lib/api'
@@ -109,12 +107,7 @@ export function DashboardPage() {
               <div className="panel-heading"><div><span className="panel-kicker">DISTRIBUIÇÃO</span><h2>Despesas por categoria</h2></div></div>
               {categoryData.length ? (
                 <div className="category-chart-content">
-                  <div className="donut-wrap">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart><Pie data={categoryData} dataKey="amount" nameKey="category" innerRadius={57} outerRadius={78} paddingAngle={3}>{categoryData.map((item) => <Cell key={item.category} fill={item.color} />)}</Pie><Tooltip formatter={(value) => currency.format(Number(value))} /></PieChart>
-                    </ResponsiveContainer>
-                    <div className="donut-label"><strong>{categoryData.length}</strong><span>categorias</span></div>
-                  </div>
+                  <CategoryDonut data={categoryData} />
                   <div className="category-legend">{categoryData.slice(0, 5).map((item) => <div key={item.category}><span className="category-name"><i style={{ background: item.color }} />{item.category}</span><strong>{item.percentage}%</strong></div>)}</div>
                 </div>
               ) : <div className="chart-empty"><Target size={30} /><p>Adicione despesas pagas para visualizar a distribuição.</p></div>}

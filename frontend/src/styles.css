@@ -37,7 +37,7 @@ a { color: inherit; }
 .nav-caption { margin: 0 13px 10px; color: #647188; font-size: 10px; font-weight: 700; letter-spacing: 1.7px; }
 .nav-caption-second { margin-top: 31px; }
 .main-nav a, .nav-disabled { width: 100%; height: 46px; padding: 0 13px; margin: 3px 0; display: flex; align-items: center; gap: 13px; color: #aab3c2; text-decoration: none; background: transparent; border: 0; border-radius: 10px; font-size: 14px; font-weight: 500; transition: .18s ease; }
-.main-nav a:hover { background: rgba(255,255,255,.05); color: white; }
+.sidebarmain-nav a:hover { background: rgba(255,255,255,.05); color: white; }
 .main-nav a.active { color: white; background: linear-gradient(100deg, rgba(42,178,137,.22), rgba(42,178,137,.08)); box-shadow: inset 3px 0 #33bd93; }
 .nav-disabled { opacity: .5; cursor: default; }
 .sidebar-insight { margin: auto 2px 20px; padding: 18px; border-radius: 14px; color: #d9e0ea; background: linear-gradient(145deg, #1a2941, #162238); border: 1px solid rgba(255,255,255,.05); }
@@ -117,6 +117,13 @@ a { color: inherit; }
 .donut-label { pointer-events: none; position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .donut-label strong { font: 700 23px 'Manrope', sans-serif; }
 .donut-label span { color: #8a93a2; font-size: 10px; }
+.category-tooltip { box-sizing: border-box; width: 192px; height: 68px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--navy); box-shadow: var(--shadow); font-size: 12px; line-height: 18px; }
+.category-tooltip-title { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+.category-tooltip-title i { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%; }
+.category-tooltip-title span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.category-tooltip-values { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.category-tooltip-values strong { font-weight: 600; }
+.category-tooltip-values > span { color: var(--muted); font-size: 11px; }
 .category-legend { flex: 1; display: flex; flex-direction: column; gap: 13px; }
 .category-legend > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 11px; }
 .category-name { min-width: 0; display: flex; align-items: center; gap: 8px; color: #657083; }
